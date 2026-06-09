@@ -86,6 +86,21 @@ async def main():
             plt.savefig("ihk_forecast_chart.png", dpi=150)
             plt.close()
             
+            # Generate data table
+            months_labels = [
+                "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "Mei 2025", "Jun 2025",
+                "Jul 2025", "Ags 2025", "Sep 2025", "Okt 2025", "Nov 2025", "Des 2025",
+                "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "Mei 2026"
+            ]
+            inf_series = inf_data["historical_series"]
+            ihk_series = ihk_data["historical_series"]
+            
+            table_rows = ""
+            for i in range(17):
+                status = "Historis (YoY)" if i < 12 else "Historis (Berjalan)"
+                table_rows += f"| {i+1} | {months_labels[i]} | `{inf_series[i]:.4f}%` | `{ihk_series[i]:.4f}` | {status} |\n"
+            table_rows += f"| 18 | **Jun 2026** | **`{inf_forecast:.4f}%`** | **`{ihk_forecast:.4f}`** | **Hasil Ramalan (ANN)** |\n"
+
             # Write result.md
             print("Menulis dokumen hasil ke result.md...")
             md_content = f"""# Hasil Pelatihan dan Peramalan Artificial Neural Network (ANN)
@@ -103,7 +118,17 @@ Berikut adalah ringkasan hasil pengujian model Jaringan Saraf Tiruan (ANN) yang 
 
 ---
 
-## 2. Grafik Hasil Pelatihan (Loss Function)
+## 2. Tabel Data Input Historis & Hasil Peramalan
+
+Tabel di bawah ini menampilkan 17 data masuk (input historis) yang digunakan untuk melatih model ANN, diikuti oleh hasil peramalan untuk Bulan ke-18 (Juni 2026):
+
+| Bulan Ke- | Periode | Data Masuk: Inflasi | Data Masuk: IHK | Status Data |
+| :---: | :---: | :---: | :---: | :--- |
+{table_rows}
+
+---
+
+## 3. Grafik Hasil Pelatihan (Loss Function)
 
 Grafik di bawah menunjukkan kurva penurunan tingkat error (**Mean Squared Error / MSE**) model Inflasi dan IHK selama 150 epoch pelatihan. Loss yang mengecil mendekati nol menandakan model berhasil belajar secara optimal.
 
@@ -111,7 +136,7 @@ Grafik di bawah menunjukkan kurva penurunan tingkat error (**Mean Squared Error 
 
 ---
 
-## 3. Perbandingan Data Aktual vs Prediksi Model
+## 4. Perbandingan Data Aktual vs Prediksi Model
 
 Grafik di bawah ini membandingkan data aktual historis dengan hasil fitting (prediksi) model ANN saat fase latihan, serta menampilkan proyeksi nilai hasil ramalan untuk bulan ke-18.
 
@@ -123,7 +148,7 @@ Grafik di bawah ini membandingkan data aktual historis dengan hasil fitting (pre
 
 ---
 
-## 4. Hasil Peramalan Kelompok Komoditas Utama
+## 5. Hasil Peramalan Kelompok Komoditas Utama
 
 Berikut adalah estimasi nilai inflasi untuk 11 kelompok komoditas utama di **{res['kota']}** pada bulan ke-18:
 
