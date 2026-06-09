@@ -1,0 +1,147 @@
+import httpx
+import asyncio
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+async def main():
+    url = "http://localhost:8000/api/forecast"
+    payload = {
+        "kota": "Kota Banda Aceh",
+        "lag": 3,
+        "epochs": 150,
+        "batch_size": 2,
+        "learning_rate": 0.01,
+        "dropout_rate": 0.1
+    }
+    
+    print("Mengirim request ke FastAPI untuk melatih model dan meramal...")
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(url, json=payload)
+            if response.status_code != 200:
+                print(f"Error dari server: {response.text}")
+                return
+            
+            res = response.json()
+            forecast = res["forecast"]
+            
+            # --- Extract data for Inflasi ---
+            inf_data = forecast["inflasi"]
+            inf_actual = inf_data["actual_targets"]
+            inf_pred = inf_data["train_predictions"]
+            inf_forecast = inf_data["forecast_value"]
+            inf_loss = inf_data["loss_history"]
+            
+            # --- Extract data for IHK ---
+            ihk_data = forecast["ihk"]
+            ihk_actual = ihk_data["actual_targets"]
+            ihk_pred = ihk_data["train_predictions"]
+            ihk_forecast = ihk_data["forecast_value"]
+            ihk_loss = ihk_data["loss_history"]
+            
+            print("Membuat grafik loss function...")
+            # 1. Plot Loss Function Chart
+            plt.figure(figsize=(10, 5))
+            plt.plot(inf_loss, label="Inflasi MSE Loss", color="#1f77b4", linewidth=2)
+            plt.plot(ihk_loss, label="IHK MSE Loss", color="#2ca02c", linewidth=2)
+            plt.title("ANN Model Training Loss (MSE) per Epoch", fontsize=14, fontweight='bold', pad=15)
+            plt.xlabel("Epoch", fontsize=12)
+            plt.ylabel("Mean Squared Error (MSE)", fontsize=12)
+            plt.grid(True, linestyle='--', alpha=0.6)
+            plt.legend(fontsize=11)
+            plt.tight_layout()
+            plt.savefig("loss_chart.png", dpi=150)
+            plt.close()
+            
+            print("Membuat grafik perbandingan peramalan...")
+            # 2. Plot Inflasi Prediction vs Actual
+            x_axis = np.arange(1, len(inf_actual) + 1)
+            plt.figure(figsize=(10, 5))
+            plt.plot(x_axis, inf_actual, 'o-', label="Data Aktual (Target)", color="#1f77b4", linewidth=2)
+            plt.plot(x_axis, inf_pred, 'x--', label="Prediksi Jaringan (Train)", color="#ff7f0e", linewidth=1.8)
+            plt.plot(len(inf_actual) + 1, inf_forecast, 'r*', markersize=14, label=f"Hasil Ramalan (Bulan 18): {inf_forecast:.4f}")
+            plt.title("Peramalan Inflasi: Data Aktual vs Hasil Fitting ANN", fontsize=14, fontweight='bold', pad=15)
+            plt.xlabel("Index Sampel Latih (Sliding Window)", fontsize=12)
+            plt.ylabel("Tingkat Inflasi (%)", fontsize=12)
+            plt.xticks(np.append(x_axis, len(inf_actual) + 1))
+            plt.grid(True, linestyle='--', alpha=0.6)
+            plt.legend(fontsize=11)
+            plt.tight_layout()
+            plt.savefig("inflasi_forecast_chart.png", dpi=150)
+            plt.close()
+
+            # 3. Plot IHK Prediction vs Actual
+            plt.figure(figsize=(10, 5))
+            plt.plot(x_axis, ihk_actual, 'o-', label="Data Aktual (Target)", color="#2ca02c", linewidth=2)
+            plt.plot(x_axis, ihk_pred, 'x--', label="Prediksi Jaringan (Train)", color="#d62728", linewidth=1.8)
+            plt.plot(len(ihk_actual) + 1, ihk_forecast, 'r*', markersize=14, label=f"Hasil Ramalan (Bulan 18): {ihk_forecast:.4f}")
+            plt.title("Peramalan IHK: Data Aktual vs Hasil Fitting ANN", fontsize=14, fontweight='bold', pad=15)
+            plt.xlabel("Index Sampel Latih (Sliding Window)", fontsize=12)
+            plt.ylabel("Indeks Harga Konsumen (IHK)", fontsize=12)
+            plt.xticks(np.append(x_axis, len(ihk_actual) + 1))
+            plt.grid(True, linestyle='--', alpha=0.6)
+            plt.legend(fontsize=11)
+            plt.tight_layout()
+            plt.savefig("ihk_forecast_chart.png", dpi=150)
+            plt.close()
+            
+            # Write result.md
+            print("Menulis dokumen hasil ke result.md...")
+            md_content = f"""# Hasil Pelatihan dan Peramalan Artificial Neural Network (ANN)
+
+Berikut adalah ringkasan hasil pengujian model Jaringan Saraf Tiruan (ANN) yang dilatih menggunakan data historis 17 bulan untuk **{res['kota']}**.
+
+---
+
+## 1. Nilai Peramalan (Bulan ke-18 - Juni 2026)
+
+| Variabel | Nilai Ramalan | Nilai Terakhir (Mei 2026) | Trend / Keterangan |
+| :--- | :---: | :---: | :--- |
+| **Inflasi** | `{inf_forecast:.4f}%` | `{inf_actual[-1]:.4f}%` | {"Naik" if inf_forecast > inf_actual[-1] else "Turun"} |
+| **IHK** | `{ihk_forecast:.4f}` | `{ihk_actual[-1]:.4f}` | {"Naik" if ihk_forecast > ihk_actual[-1] else "Turun"} |
+
+---
+
+## 2. Grafik Hasil Pelatihan (Loss Function)
+
+Grafik di bawah menunjukkan kurva penurunan tingkat error (**Mean Squared Error / MSE**) model Inflasi dan IHK selama 150 epoch pelatihan. Loss yang mengecil mendekati nol menandakan model berhasil belajar secara optimal.
+
+![Kurva Loss MSE](loss_chart.png)
+
+---
+
+## 3. Perbandingan Data Aktual vs Prediksi Model
+
+Grafik di bawah ini membandingkan data aktual historis dengan hasil fitting (prediksi) model ANN saat fase latihan, serta menampilkan proyeksi nilai hasil ramalan untuk bulan ke-18.
+
+### A. Grafik Peramalan Inflasi
+![Grafik Inflasi](inflasi_forecast_chart.png)
+
+### B. Grafik Peramalan IHK
+![Grafik IHK](ihk_forecast_chart.png)
+
+---
+
+## 4. Hasil Peramalan Kelompok Komoditas Utama
+
+Berikut adalah estimasi nilai inflasi untuk 11 kelompok komoditas utama di **{res['kota']}** pada bulan ke-18:
+
+| Kelompok Komoditas | Nilai Ramalan (%) | Final Training Loss (MSE) |
+| :--- | :---: | :---: |
+"""
+            for name, details in forecast["komoditas"].items():
+                md_content += f"| {name} | `{details['forecast_value']:.4f}%` | `{details['final_loss']:.6f}` |\n"
+                
+            with open("result.md", "w") as f:
+                f.write(md_content)
+                
+            print("Hasil sukses disimpan di result.md dan grafik PNG telah digenerate!")
+
+    except Exception as e:
+        import traceback
+        print("Gagal memproses hasil:")
+        traceback.print_exc()
+
+if __name__ == "__main__":
+    asyncio.run(main())
