@@ -86,7 +86,7 @@ async def main():
             plt.savefig("ihk_forecast_chart.png", dpi=150)
             plt.close()
             
-            # Generate data table
+            # Generate IHK & Inflasi table
             months_labels = [
                 "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "Mei 2025", "Jun 2025",
                 "Jul 2025", "Ags 2025", "Sep 2025", "Okt 2025", "Nov 2025", "Des 2025",
@@ -95,11 +95,62 @@ async def main():
             inf_series = inf_data["historical_series"]
             ihk_series = ihk_data["historical_series"]
             
-            table_rows = ""
+            table_rows_general = ""
             for i in range(17):
                 status = "Historis (YoY)" if i < 12 else "Historis (Berjalan)"
-                table_rows += f"| {i+1} | {months_labels[i]} | `{inf_series[i]:.4f}%` | `{ihk_series[i]:.4f}` | {status} |\n"
-            table_rows += f"| 18 | **Jun 2026** | **`{inf_forecast:.4f}%`** | **`{ihk_forecast:.4f}`** | **Hasil Ramalan (ANN)** |\n"
+                table_rows_general += f"| {i+1} | {months_labels[i]} | `{inf_series[i]:.4f}%` | `{ihk_series[i]:.4f}` | {status} |\n"
+            table_rows_general += f"| 18 | **Jun 2026** | **`{inf_forecast:.4f}%`** | **`{ihk_forecast:.4f}`** | **Hasil Ramalan (ANN)** |\n"
+
+            # Commodity group lists
+            c1_names = [
+                "Makanan, Minuman dan Tembakau",
+                "Pakaian dan Alas Kaki",
+                "Perumahan, Air, Listrik dan Bahan Bakar Rumah Tangga",
+                "Perlengkapan, Peralatan dan Pemeliharaan Rutin Rumah Tangga",
+                "Kesehatan"
+            ]
+            c2_names = [
+                "Informasi, Komunikasi dan Jasa Keuangan",
+                "Transportasi",
+                "Rekreasi, Olahraga dan Budaya",
+                "Pendidikan",
+                "Penyediaan Makanan dan Minuman / Restoran",
+                "Perawatan Pribadi dan Jasa Lainnya"
+            ]
+
+            # Generate Commodity C1 Table
+            table_rows_c1 = ""
+            for i in range(17):
+                row_str = f"| {i+1} | {months_labels[i]} "
+                for name in c1_names:
+                    val = forecast["komoditas"][name]["historical_series"][i]
+                    row_str += f"| `{val:.4f}%` "
+                row_str += "|\n"
+                table_rows_c1 += row_str
+            
+            row_str_f = "| 18 | **Jun 2026** "
+            for name in c1_names:
+                val = forecast["komoditas"][name]["forecast_value"]
+                row_str_f += f"| **`{val:.4f}%`** "
+            row_str_f += "|\n"
+            table_rows_c1 += row_str_f
+
+            # Generate Commodity C2 Table
+            table_rows_c2 = ""
+            for i in range(17):
+                row_str = f"| {i+1} | {months_labels[i]} "
+                for name in c2_names:
+                    val = forecast["komoditas"][name]["historical_series"][i]
+                    row_str += f"| `{val:.4f}%` "
+                row_str += "|\n"
+                table_rows_c2 += row_str
+            
+            row_str_f = "| 18 | **Jun 2026** "
+            for name in c2_names:
+                val = forecast["komoditas"][name]["forecast_value"]
+                row_str_f += f"| **`{val:.4f}%`** "
+            row_str_f += "|\n"
+            table_rows_c2 += row_str_f
 
             # Write result.md
             print("Menulis dokumen hasil ke result.md...")
@@ -118,17 +169,37 @@ Berikut adalah ringkasan hasil pengujian model Jaringan Saraf Tiruan (ANN) yang 
 
 ---
 
-## 2. Tabel Data Input Historis & Hasil Peramalan
+## 2. Tabel Data Input Historis & Hasil Peramalan (Inflasi & IHK)
 
-Tabel di bawah ini menampilkan 17 data masuk (input historis) yang digunakan untuk melatih model ANN, diikuti oleh hasil peramalan untuk Bulan ke-18 (Juni 2026):
+Tabel di bawah ini menampilkan 17 data masuk (input historis) yang digunakan untuk melatih model ANN, diikuti oleh hasil peramalan untuk Bulan ke-18 (Juni 2026) pada variabel utama:
 
 | Bulan Ke- | Periode | Data Masuk: Inflasi | Data Masuk: IHK | Status Data |
 | :---: | :---: | :---: | :---: | :--- |
-{table_rows}
+{table_rows_general}
 
 ---
 
-## 3. Grafik Hasil Pelatihan (Loss Function)
+## 3. Tabel Data Input Historis & Hasil Peramalan Komoditas (Kelompok I)
+
+Tabel di bawah ini menampilkan data masuk historis (17 bulan) dan hasil peramalan (Bulan 18) untuk Kelompok Komoditas Utama bagian I:
+
+| Bulan Ke- | Periode | Makanan & Tembakau | Pakaian & Alas Kaki | Perumahan & Energi | Perlengkapan RT | Kesehatan |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+{table_rows_c1}
+
+---
+
+## 4. Tabel Data Input Historis & Hasil Peramalan Komoditas (Kelompok II)
+
+Tabel di bawah ini menampilkan data masuk historis (17 bulan) dan hasil peramalan (Bulan 18) untuk Kelompok Komoditas Utama bagian II:
+
+| Bulan Ke- | Periode | Info & Keuangan | Transportasi | Rekreasi & Budaya | Pendidikan | Restoran | Perawatan & Jasa |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+{table_rows_c2}
+
+---
+
+## 5. Grafik Hasil Pelatihan (Loss Function)
 
 Grafik di bawah menunjukkan kurva penurunan tingkat error (**Mean Squared Error / MSE**) model Inflasi dan IHK selama 150 epoch pelatihan. Loss yang mengecil mendekati nol menandakan model berhasil belajar secara optimal.
 
@@ -136,7 +207,7 @@ Grafik di bawah menunjukkan kurva penurunan tingkat error (**Mean Squared Error 
 
 ---
 
-## 4. Perbandingan Data Aktual vs Prediksi Model
+## 6. Perbandingan Data Aktual vs Prediksi Model
 
 Grafik di bawah ini membandingkan data aktual historis dengan hasil fitting (prediksi) model ANN saat fase latihan, serta menampilkan proyeksi nilai hasil ramalan untuk bulan ke-18.
 
@@ -148,9 +219,9 @@ Grafik di bawah ini membandingkan data aktual historis dengan hasil fitting (pre
 
 ---
 
-## 5. Hasil Peramalan Kelompok Komoditas Utama
+## 7. Hasil Ringkasan Peramalan Komoditas
 
-Berikut adalah estimasi nilai inflasi untuk 11 kelompok komoditas utama di **{res['kota']}** pada bulan ke-18:
+Berikut adalah estimasi nilai inflasi untuk 11 kelompok komoditas utama di **{res['kota']}** pada bulan ke-18 beserta tingkat MSE loss-nya:
 
 | Kelompok Komoditas | Nilai Ramalan (%) | Final Training Loss (MSE) |
 | :--- | :---: | :---: |
