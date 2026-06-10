@@ -7,7 +7,7 @@ import os
 async def main():
     url = "http://localhost:8000/api/forecast"
     payload = {
-        "kota": "Kota Banda Aceh",
+        "kota": "Kota Metro",
         "lag": 3,
         "epochs": 150,
         "batch_size": 2,
