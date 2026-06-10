@@ -8,8 +8,8 @@ Berikut adalah ringkasan hasil pengujian model Jaringan Saraf Tiruan (ANN) yang 
 
 | Variabel | Nilai Ramalan | Nilai Terakhir (Mei 2026) | Trend / Keterangan |
 | :--- | :---: | :---: | :--- |
-| **Inflasi** | `-0.7738%` | `1.1300%` | Turun |
-| **IHK** | `106.5200` | `110.4100` | Turun |
+| **Inflasi** | `0.1069%` | `1.1300%` | Turun |
+| **IHK** | `110.2963` | `110.4100` | Turun |
 
 ---
 
@@ -36,7 +36,7 @@ Tabel di bawah ini menampilkan 17 data masuk (input historis) yang digunakan unt
 | 15 | Mar 2026 | `0.1700%` | `108.9900` | Historis (Berjalan) |
 | 16 | Apr 2026 | `0.1700%` | `109.1800` | Historis (Berjalan) |
 | 17 | Mei 2026 | `1.1300%` | `110.4100` | Historis (Berjalan) |
-| 18 | **Jun 2026** | **`-0.7738%`** | **`106.5200`** | **Hasil Ramalan (ANN)** |
+| 18 | **Jun 2026** | **`0.1069%`** | **`110.2963`** | **Hasil Ramalan (ANN)** |
 
 
 ---
@@ -64,7 +64,7 @@ Tabel di bawah ini menampilkan data masuk historis (17 bulan) dan hasil peramala
 | 15 | Mar 2026 | `0.6800%` | `-0.0300%` | `0.0300%` | `-0.3400%` | `-0.1300%` |
 | 16 | Apr 2026 | `-0.0100%` | `0.6600%` | `0.2100%` | `0.0000%` | `0.0300%` |
 | 17 | Mei 2026 | `2.1900%` | `0.0300%` | `0.0200%` | `1.4700%` | `0.0000%` |
-| 18 | **Jun 2026** | **`-1.8295%`** | **`-0.4338%`** | **`-0.9990%`** | **`-1.3466%`** | **`-0.3291%`** |
+| 18 | **Jun 2026** | **`-0.0056%`** | **`-0.0250%`** | **`0.0482%`** | **`-1.1965%`** | **`0.0915%`** |
 
 
 ---
@@ -92,7 +92,7 @@ Tabel di bawah ini menampilkan data masuk historis (17 bulan) dan hasil peramala
 | 15 | Mar 2026 | `0.3100%` | `0.7000%` | `0.0000%` | `0.0000%` | `0.0000%` | `-1.5000%` |
 | 16 | Apr 2026 | `0.3700%` | `0.1800%` | `0.4700%` | `0.0000%` | `1.1200%` | `-0.7100%` |
 | 17 | Mei 2026 | `5.2400%` | `0.3200%` | `0.0000%` | `0.0000%` | `0.7700%` | `-0.5500%` |
-| 18 | **Jun 2026** | **`-7.3282%`** | **`-0.3761%`** | **`-2.0603%`** | **`-8.2349%`** | **`-0.1937%`** | **`-1.6463%`** |
+| 18 | **Jun 2026** | **`28.2130%`** | **`-0.0179%`** | **`-0.0833%`** | **`-0.3010%`** | **`0.0607%`** | **`1.0948%`** |
 
 
 ---
@@ -123,14 +123,14 @@ Berikut adalah estimasi nilai inflasi untuk 11 kelompok komoditas utama di **KOT
 
 | Kelompok Komoditas | Nilai Ramalan (%) | Final Training Loss (MSE) |
 | :--- | :---: | :---: |
-| Makanan, Minuman dan Tembakau | `-1.8295%` | `0.411140` |
-| Pakaian dan Alas Kaki | `-0.4338%` | `0.145633` |
-| Perumahan, Air, Listrik dan Bahan Bakar Rumah Tangga | `-0.9990%` | `0.123414` |
-| Perlengkapan, Peralatan dan Pemeliharaan Rutin Rumah Tangga | `-1.3466%` | `0.231420` |
-| Kesehatan | `-0.3291%` | `0.426532` |
-| Informasi, Komunikasi dan Jasa Keuangan | `-7.3282%` | `0.123939` |
-| Transportasi | `-0.3761%` | `0.419665` |
-| Rekreasi, Olahraga dan Budaya | `-2.0603%` | `0.846762` |
-| Pendidikan | `-8.2349%` | `1.124812` |
-| Penyediaan Makanan dan Minuman / Restoran | `-0.1937%` | `0.154430` |
-| Perawatan Pribadi dan Jasa Lainnya | `-1.6463%` | `0.453187` |
+| Makanan, Minuman dan Tembakau | `-0.0056%` | `0.068508` |
+| Pakaian dan Alas Kaki | `-0.0250%` | `0.032940` |
+| Perumahan, Air, Listrik dan Bahan Bakar Rumah Tangga | `0.0482%` | `0.035866` |
+| Perlengkapan, Peralatan dan Pemeliharaan Rutin Rumah Tangga | `-1.1965%` | `0.057469` |
+| Kesehatan | `0.0915%` | `0.042540` |
+| Informasi, Komunikasi dan Jasa Keuangan | `28.2130%` | `0.037506` |
+| Transportasi | `-0.0179%` | `0.070784` |
+| Rekreasi, Olahraga dan Budaya | `-0.0833%` | `0.040819` |
+| Pendidikan | `-0.3010%` | `0.047034` |
+| Penyediaan Makanan dan Minuman / Restoran | `0.0607%` | `0.052902` |
+| Perawatan Pribadi dan Jasa Lainnya | `1.0948%` | `0.060851` |

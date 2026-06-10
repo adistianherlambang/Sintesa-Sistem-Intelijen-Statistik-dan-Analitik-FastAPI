@@ -46,6 +46,8 @@ async def handle_forecasting_request(body: ForecastRequest) -> Dict[str, Any]:
         
     inflasi_res = train_and_forecast(
         series=inflasi_series,
+        city_name=resolved_kota,
+        var_name="Inflasi",
         lag=body.lag,
         epochs=body.epochs,
         batch_size=body.batch_size,
@@ -64,6 +66,8 @@ async def handle_forecasting_request(body: ForecastRequest) -> Dict[str, Any]:
 
     ihk_res = train_and_forecast(
         series=ihk_series,
+        city_name=resolved_kota,
+        var_name="IHK",
         lag=body.lag,
         epochs=body.epochs,
         batch_size=body.batch_size,
@@ -82,6 +86,8 @@ async def handle_forecasting_request(body: ForecastRequest) -> Dict[str, Any]:
         
         komo_res = train_and_forecast(
             series=komo_series,
+            city_name=resolved_kota,
+            var_name=name,
             lag=body.lag,
             epochs=body.epochs,
             batch_size=body.batch_size,
