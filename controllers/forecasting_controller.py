@@ -1,8 +1,14 @@
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
 from fastapi import HTTPException
+import httpx
+import os
+import asyncio
 from services.data_service import get_cleaned_city_data
 from services.ann_service import train_and_forecast
+
+# Backend URL configuration
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000")
 
 # Pydantic models for request validation
 class ForecastRequest(BaseModel):
@@ -124,3 +130,55 @@ async def handle_forecasting_request(body: ForecastRequest) -> Dict[str, Any]:
             "hidden_neurons": body.hidden_neurons
         }
     }
+
+async def handle_batch_forecasting_task():
+    """
+    Background worker that runs forecasting on all 150+ cities sequentially 
+    and posts results back to Express backend MongoDB.
+    """
+    print("[Batch Tasks] Memulai proses peramalan massal latar belakang...")
+    try:
+        # Fetch cities
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(f"{BACKEND_URL}/api/kota")
+            response.raise_for_status()
+            cities = response.json()
+    except Exception as e:
+        print(f"[Batch Tasks] CRITICAL ERROR: Gagal mengambil daftar kota: {str(e)}")
+        return
+
+    success_count = 0
+    failed_count = 0
+    
+    print(f"[Batch Tasks] Ditemukan {len(cities)} kota. Memulai training...")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        for idx, city in enumerate(cities):
+            city_name = city.get("name")
+            print(f"[Batch Tasks] ({idx+1}/{len(cities)}) Memproses {city_name}...", end="")
+            try:
+                # Reuse the single request logic
+                req = ForecastRequest(
+                    kota=city_name,
+                    lag=3,
+                    epochs=150,
+                    batch_size=2,
+                    learning_rate=0.01,
+                    dropout_rate=0.1,
+                    hidden_neurons=[16, 8]
+                )
+                res = await handle_forecasting_request(req)
+                
+                # Save to backend
+                save_resp = await client.post(f"{BACKEND_URL}/api/dashboard/overview/forecast/save", json=res)
+                save_resp.raise_for_status()
+                print(" -> OK!")
+                success_count += 1
+            except Exception as err:
+                print(f" -> ❌ FAILED: {str(err)}")
+                failed_count += 1
+                
+            # Yield control briefly
+            await asyncio.sleep(0.05)
+
+    print(f"[Batch Tasks] PROSES MASSAL SELESAI! Sukses: {success_count}, Gagal: {failed_count}")
